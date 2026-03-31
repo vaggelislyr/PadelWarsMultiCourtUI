@@ -1,5 +1,89 @@
 console.log("Controller loaded");
 
+/* ================= MULTI COURT HELPERS ================= */
+
+const obsPreviewFrame = document.getElementById("obsPreview");
+
+function normalizeCourtId(value) {
+  const cleaned = String(value || "court1").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (!cleaned) return "court1";
+  return cleaned.startsWith("court") ? cleaned : `court${cleaned}`;
+}
+
+function getCourtNumber(courtId) {
+  const match = String(courtId || "").match(/\d+/);
+  return match ? match[0] : "1";
+}
+
+function updateCourtPreview() {
+  if (!obsPreviewFrame) return;
+
+  const courtId = normalizeCourtId(getActiveCourtId());
+  const courtNumber = getCourtNumber(courtId);
+  const targetSrc = `obs.html?court=${courtNumber}`;
+
+  const current = obsPreviewFrame.getAttribute("src") || "";
+  if (current !== targetSrc) {
+    obsPreviewFrame.setAttribute("src", targetSrc);
+  }
+}
+
+function updateCourtButtons() {
+  const active = normalizeCourtId(getActiveCourtId());
+
+  document.querySelectorAll("[data-court]").forEach(btn => {
+    const btnCourt = normalizeCourtId(btn.getAttribute("data-court"));
+    btn.classList.toggle("activeCourt", btnCourt === active);
+  });
+
+  const badge = document.getElementById("currentCourtBadge");
+  if (badge) {
+    badge.textContent = active.toUpperCase();
+  }
+}
+
+function renderControllerState(state) {
+  document.getElementById("nameAInput").value = state.nameA || "";
+  document.getElementById("nameBInput").value = state.nameB || "";
+  document.getElementById("sponsorInput").value = state.organizer || "";
+
+  timerSeconds = parseTimerText(state.timerText || "00:00");
+
+  setText("teamANamePreview", state.nameA || "Player1 / Player2");
+  setText("teamBNamePreview", state.nameB || "Player1 / Player2");
+
+  setBadgeText("serveBadge", `Serve: ${state.serve || "A"}`);
+
+  let modeText = "Normal Mode";
+  if (state.mode === "tiebreak") modeText = "Tiebreak";
+  if (state.matchOver === true || state.mode === "finished") modeText = "Match Finished";
+  setBadgeText("modeBadge", modeText);
+
+  setBadgeText("visibleBadge", state.visible === false ? "Overlay Hidden" : "Overlay Visible");
+
+  updateCourtButtons();
+  updateCourtPreview();
+  updateFloatingPreviewLayout();
+}
+
+function bindCourtStateListener() {
+  onStateChange(renderControllerState);
+}
+
+function switchCourtUI(id) {
+  flashButton("normal");
+
+  historyStack = [];
+  stopTimer();
+
+  switchCourt(id);
+  bindCourtStateListener();
+
+  readState(state => {
+    renderControllerState(state);
+  });
+}
+
 /* ================= HISTORY ================= */
 
 let historyStack = [];
@@ -469,31 +553,13 @@ if (window.visualViewport) {
 
 window.addEventListener("load", () => {
   setTimeout(updateFloatingPreviewLayout, 80);
+  updateCourtButtons();
+  updateCourtPreview();
 });
 
 /* ================= INIT INPUTS FROM STATE ================= */
 
-onStateChange(state => {
-  document.getElementById("nameAInput").value = state.nameA || "";
-  document.getElementById("nameBInput").value = state.nameB || "";
-  document.getElementById("sponsorInput").value = state.organizer || "";
-
-  timerSeconds = parseTimerText(state.timerText || "00:00");
-
-  setText("teamANamePreview", state.nameA || "Player1 / Player2");
-  setText("teamBNamePreview", state.nameB || "Player1 / Player2");
-
-  setBadgeText("serveBadge", `Serve: ${state.serve || "A"}`);
-
-  let modeText = "Normal Mode";
-  if (state.mode === "tiebreak") modeText = "Tiebreak";
-  if (state.matchOver === true || state.mode === "finished") modeText = "Match Finished";
-  setBadgeText("modeBadge", modeText);
-
-  setBadgeText("visibleBadge", state.visible === false ? "Overlay Hidden" : "Overlay Visible");
-
-  updateFloatingPreviewLayout();
-});
+bindCourtStateListener();
 
 /* ================= GLOBAL EXPORTS FOR HTML onclick ================= */
 
@@ -508,3 +574,4 @@ window.resetMatch = resetMatch;
 window.startTimer = startTimer;
 window.stopTimer = stopTimer;
 window.resetTimer = resetTimer;
+window.switchCourtUI = switchCourtUI;
