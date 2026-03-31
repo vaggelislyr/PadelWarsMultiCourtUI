@@ -1,6 +1,23 @@
 console.log("state loaded");
 
-const stateRef = db.ref("matchState");
+function getCourtIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const court = params.get("court");
+
+  if (!court) return "court1";
+
+  const cleaned = String(court).toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  if (cleaned.startsWith("court")) return cleaned;
+
+  return `court${cleaned}`;
+}
+
+let activeCourtId = getCourtIdFromUrl();
+
+function getStateRef() {
+  return db.ref(`courts/${activeCourtId}`);
+}
 
 const DEFAULT_STATE = {
   nameA: "Player A1 / Player A2",
@@ -18,10 +35,6 @@ const DEFAULT_STATE = {
   setsA: 0,
   setsB: 0,
 
-  // store finished set scores
-  // example:
-  // setHistoryA = [6, 4]
-  // setHistoryB = [4, 6]
   setHistoryA: [],
   setHistoryB: [],
 
@@ -51,6 +64,8 @@ function normalizeState(raw) {
 }
 
 function initState() {
+  const stateRef = getStateRef();
+
   stateRef.once("value", snap => {
     if (!snap.exists()) {
       stateRef.set(clone(DEFAULT_STATE));
@@ -61,12 +76,15 @@ function initState() {
 }
 
 function readState(callback) {
+  const stateRef = getStateRef();
+
   stateRef.once("value").then(snap => {
     callback(normalizeState(snap.val()));
   });
 }
 
 function writeState(state) {
+  const stateRef = getStateRef();
   stateRef.set(normalizeState(state));
 }
 
@@ -77,10 +95,31 @@ function updateState(updater) {
   });
 }
 
+let stateListenerRef = null;
+
 function onStateChange(callback) {
-  stateRef.on("value", snap => {
+  if (stateListenerRef) {
+    stateListenerRef.off();
+  }
+
+  stateListenerRef = getStateRef();
+
+  stateListenerRef.on("value", snap => {
     callback(normalizeState(snap.val()));
   });
 }
+
+function switchCourt(courtId) {
+  const cleaned = String(courtId).toLowerCase().replace(/[^a-z0-9]/g, "");
+  activeCourtId = cleaned.startsWith("court") ? cleaned : `court${cleaned}`;
+  initState();
+}
+
+function getActiveCourtId() {
+  return activeCourtId;
+}
+
+window.switchCourt = switchCourt;
+window.getActiveCourtId = getActiveCourtId;
 
 initState();
