@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>Padel OBS Overlay</title>
+  <link rel="stylesheet" href="css/overlay.css">
+</head>
+<body>
+
+  <div id="overlayWrapper">
+
+    <div id="topBanners">
+      <div id="goldenBanner">GOLDEN POINT</div>
+      <div id="tiebreakBanner">TIEBREAK</div>
+      <div id="winnerBanner">🏆 MATCH WINNER</div>
+    </div>
+
+    <div id="scoreboard">
+
+      <div class="frameLine" id="lineTopLeft"></div>
+      <div class="frameLine" id="lineTopCut"></div>
+      <div class="frameLine" id="lineBottomLeft"></div>
+      <div class="frameLine" id="lineBottomCut"></div>
+      <div class="frameLine" id="lineRightVert"></div>
+      <div class="frameLine" id="lineRightMini"></div>
+
+      <div class="techBars" id="techTop">
+        <span></span><span></span><span></span>
+      </div>
+
+      <div class="techBars" id="techBottom">
+        <span></span><span></span><span></span>
+      </div>
+
+      <div id="rightStripes">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div id="contentLayer">
+        <div id="scoreboardGrid">
+
+          <div class="serveTrackCell">
+            <div id="serveTrack">
+              <span id="serveBall">🎾</span>
+            </div>
+          </div>
+
+          <div id="nameA" class="nameCell" style="grid-column:2; grid-row:1;">Player A1 / Player A2</div>
+          <div id="set2A" class="setCell hiddenSet" style="grid-column:3; grid-row:1;">0</div>
+          <div id="set1A" class="setCell hiddenSet" style="grid-column:4; grid-row:1;">0</div>
+          <div id="gamesA" class="gamesCell" style="grid-column:5; grid-row:1;">0</div>
+          <div id="pointsA" class="pointsCell" style="grid-column:6; grid-row:1;">0</div>
+
+          <div id="nameB" class="nameCell" style="grid-column:2; grid-row:2;">Player B1 / Player B2</div>
+          <div id="set2B" class="setCell hiddenSet" style="grid-column:3; grid-row:2;">0</div>
+          <div id="set1B" class="setCell hiddenSet" style="grid-column:4; grid-row:2;">0</div>
+          <div id="gamesB" class="gamesCell" style="grid-column:5; grid-row:2;">0</div>
+          <div id="pointsB" class="pointsCell" style="grid-column:6; grid-row:2;">0</div>
+
+        </div>
+      </div>
+    </div>
+
+    <div id="barConnector"></div>
+
+    <div id="bottomBar">
+      <div class="bottomFrameLine" id="barLineLeft"></div>
+      <div class="bottomFrameLine" id="barLineRight"></div>
+      <div class="bottomFrameLine" id="barCutRight"></div>
+
+      <div id="barTech">
+        <span></span><span></span><span></span>
+      </div>
+
+      <div id="bottomBarContent">
+        <div id="organizer">@sponsor</div>
+        <div id="timer">00:00</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script src="js/firebase.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/obs.js"></script>
+
+  <script>
+  (function(){
+    const scoreboard = document.getElementById("scoreboard");
+
+    const goldenBanner = document.getElementById("goldenBanner");
+    const tiebreakBanner = document.getElementById("tiebreakBanner");
+    const winnerBanner = document.getElementById("winnerBanner");
+
+    const nameA = document.getElementById("nameA");
+    const nameB = document.getElementById("nameB");
+
+    const pointsA = document.getElementById("pointsA");
+    const pointsB = document.getElementById("pointsB");
+    const gamesA = document.getElementById("gamesA");
+    const gamesB = document.getElementById("gamesB");
+    const set1A = document.getElementById("set1A");
+    const set1B = document.getElementById("set1B");
+    const set2A = document.getElementById("set2A");
+    const set2B = document.getElementById("set2B");
+
+    function syncModes(){
+      scoreboard.classList.toggle("mode-golden", goldenBanner.classList.contains("active"));
+      scoreboard.classList.toggle("mode-tiebreak", tiebreakBanner.classList.contains("active"));
+
+      const hasWinner =
+        winnerBanner.classList.contains("active") ||
+        nameA.classList.contains("winnerName") ||
+        nameB.classList.contains("winnerName");
+
+      scoreboard.classList.toggle("match-finished", hasWinner);
+    }
+
+    function pulse(el){
+      if(!el) return;
+      el.classList.remove("visualPulse");
+      void el.offsetWidth;
+      el.classList.add("visualPulse");
+      setTimeout(() => el.classList.remove("visualPulse"), 260);
+    }
+
+    function watchText(el, doPulse){
+      if(!el) return;
+      let last = el.textContent;
+      const observer = new MutationObserver(() => {
+        const now = el.textContent;
+        if(now !== last){
+          last = now;
+          if(doPulse) pulse(el);
+        }
+      });
+      observer.observe(el, {
+        childList:true,
+        subtree:true,
+        characterData:true
+      });
+    }
+
+    function watchClass(el){
+      if(!el) return;
+      const observer = new MutationObserver(syncModes);
+      observer.observe(el, { attributes:true, attributeFilter:["class"] });
+    }
+
+    watchClass(goldenBanner);
+    watchClass(tiebreakBanner);
+    watchClass(winnerBanner);
+    watchClass(nameA);
+    watchClass(nameB);
+
+    watchText(pointsA, true);
+    watchText(pointsB, true);
+    watchText(gamesA, true);
+    watchText(gamesB, true);
+    watchText(set1A, true);
+    watchText(set1B, true);
+    watchText(set2A, true);
+    watchText(set2B, true);
+
+    syncModes();
+  })();
+  </script>
+
+</body>
+</html>
