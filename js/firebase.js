@@ -1,11 +1,5 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+console.log("firebase loaded");
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyBi25BAc17Tsy2UjgX-RxY64SZzVtUJjGM",
   authDomain: "court-scoreboards.firebaseapp.com",
@@ -17,6 +11,7 @@ const firebaseConfig = {
   measurementId: "G-6KT557NW2Y"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+window.db = db;
