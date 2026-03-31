@@ -281,6 +281,39 @@ input::placeholder{
 }
 
 /* =========================
+   COURT SWITCHER
+========================= */
+
+.courtSwitcher{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:10px;
+}
+
+.btnCourt{
+  background:#18202b;
+  color:#ffffff;
+  border:1px solid rgba(255,255,255,0.08);
+  min-height:52px;
+  font-size:15px;
+  font-weight:800;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.btnCourt:hover{
+  background:#202a37;
+}
+
+.btnCourt.activeCourt{
+  background:#ffffff;
+  color:#000000;
+  border:1px solid rgba(255,255,255,0.18);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.12) inset,
+    0 0 18px rgba(255,255,255,0.12);
+}
+
+/* =========================
    FLASH FEEDBACK
 ========================= */
 
@@ -432,6 +465,10 @@ input::placeholder{
     grid-template-columns:repeat(4,1fr);
   }
 
+  .courtSwitcher{
+    grid-template-columns:repeat(4, 1fr);
+  }
+
   .stickyPreviewDock{
     width:min(980px, calc(100vw - 40px));
   }
@@ -467,6 +504,16 @@ input::placeholder{
 
   .actionGrid{
     grid-template-columns:1fr 1fr;
+  }
+
+  .courtSwitcher{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .btnCourt{
+    min-height:50px;
+    font-size:14px;
+    padding:12px;
   }
 
   .stickyPreviewDock{
