@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PadelWars ScoreBoard</title>
-  <link rel="stylesheet" href="css/controller.css?v=5">
+  <link rel="stylesheet" href="css/controller.css?v=6">
 </head>
 <body>
 
@@ -23,6 +23,25 @@
         </div>
       </div>
     </header>
+
+    <section class="panel">
+      <div class="sectionTop">
+        <h2>Court Selection</h2>
+        <div class="miniBadges">
+          <span id="activeCourtBadge" class="miniBadge">Active: court1</span>
+        </div>
+      </div>
+
+      <div class="courtSwitcher">
+        <button class="btn btnCourt" onclick="switchCourtUI(1)">Court 1</button>
+        <button class="btn btnCourt" onclick="switchCourtUI(2)">Court 2</button>
+        <button class="btn btnCourt" onclick="switchCourtUI(3)">Court 3</button>
+        <button class="btn btnCourt" onclick="switchCourtUI(4)">Court 4</button>
+        <button class="btn btnCourt" onclick="switchCourtUI(5)">Court 5</button>
+        <button class="btn btnCourt" onclick="switchCourtUI(6)">Court 6</button>
+        <button class="btn btnCourt" onclick="switchCourtUI(7)">Court 7</button>
+      </div>
+    </section>
 
     <section class="panel infoPanel">
       <div class="sectionTop">
@@ -121,7 +140,7 @@
         <iframe
           id="obsPreview"
           class="previewFrame"
-          src="obs.html"
+          src="obs.html?court=1"
           title="OBS Scoreboard Preview"
           loading="lazy">
         </iframe>
@@ -132,9 +151,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <script src="js/firebase.js"></script>
-  <script src="js/state.js"></script>
-  <script src="js/controller.js"></script>
+  <script src="js/firebase.js?v=2"></script>
+  <script src="js/state.js?v=2"></script>
+  <script src="js/controller.js?v=2"></script>
 
 </body>
 </html>
