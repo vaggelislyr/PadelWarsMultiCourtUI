@@ -15,95 +15,17 @@ function getCourtNumber(courtId) {
   return match ? match[0] : "1";
 }
 
-function getControllerPanels() {
-  return Array.from(document.querySelectorAll(".appShell > section.panel"));
-}
-
-function getStickyPreviewDock() {
-  return document.getElementById("stickyPreviewDock");
-}
-
-function ensureSimpleModeToggleButton() {
-  const panels = getControllerPanels();
-  const courtPanel = panels[0];
-  if (!courtPanel) return;
-
-  let row = document.getElementById("simpleModeToggleRow");
-  if (!row) {
-    row = document.createElement("div");
-    row.id = "simpleModeToggleRow";
-    row.style.marginTop = "12px";
-
-    const button = document.createElement("button");
-    button.id = "simpleModeToggleBtn";
-    button.className = "btn btnSecondary btnFull";
-    button.textContent = "Open Simple Mode";
-    button.onclick = toggleSimpleMode;
-
-    row.appendChild(button);
-    courtPanel.appendChild(row);
-  }
-}
-
-function updateSimpleModeToggleButton(state) {
-  const btn = document.getElementById("simpleModeToggleBtn");
-  if (!btn) return;
-
-  if (state.simpleMode) {
-    btn.textContent = "Back To Full Mode";
-    btn.classList.remove("btnSecondary");
-    btn.classList.add("btnPrimary");
-  } else {
-    btn.textContent = "Open Simple Mode";
-    btn.classList.remove("btnPrimary");
-    btn.classList.add("btnSecondary");
-  }
-}
-
-function applyControllerModeUI(state) {
-  const panels = getControllerPanels();
-
-  const courtPanel = panels[0];
-  const matchInfoPanel = panels[1];
-  const simpleModePanel = panels[2];
-  const scoreButtonsPanel = panels[3];
-  const controlsPanel = panels[4];
-  const timerPanel = panels[5];
-  const previewDock = getStickyPreviewDock();
-
-  if (!courtPanel) return;
-
-  if (state.simpleMode === true) {
-    if (matchInfoPanel) matchInfoPanel.style.display = "none";
-    if (simpleModePanel) simpleModePanel.style.display = "";
-    if (scoreButtonsPanel) scoreButtonsPanel.style.display = "none";
-    if (controlsPanel) controlsPanel.style.display = "none";
-    if (timerPanel) timerPanel.style.display = "none";
-    if (previewDock) previewDock.style.display = "none";
-  } else {
-    if (matchInfoPanel) matchInfoPanel.style.display = "";
-    if (simpleModePanel) simpleModePanel.style.display = "none";
-    if (scoreButtonsPanel) scoreButtonsPanel.style.display = "";
-    if (controlsPanel) controlsPanel.style.display = "";
-    if (timerPanel) timerPanel.style.display = "";
-    if (previewDock) previewDock.style.display = "";
-  }
-
-  updateSimpleModeToggleButton(state);
-}
-
 function updateCourtPreview(forceReload = false) {
   if (!obsPreviewFrame) return;
 
   const courtId = normalizeCourtId(getActiveCourtId());
   const courtNumber = getCourtNumber(courtId);
   const baseSrc = `obs.html?court=${courtNumber}`;
-
   const currentSrc = obsPreviewFrame.getAttribute("src") || "";
   const currentBase = currentSrc.split("&preview=")[0];
 
   if (forceReload || currentBase !== baseSrc) {
-    const finalSrc = forceReload ? `${baseSrc}&preview=${Date.now()}` : baseSrc;
+    const finalSrc = `${baseSrc}&preview=${Date.now()}`;
     obsPreviewFrame.setAttribute("src", finalSrc);
   }
 }
@@ -117,9 +39,7 @@ function updateCourtButtons() {
   });
 
   const badge = document.getElementById("currentCourtBadge");
-  if (badge) {
-    badge.textContent = active.toUpperCase();
-  }
+  if (badge) badge.textContent = active.toUpperCase();
 }
 
 /* ================= UI HELPERS ================= */
@@ -134,93 +54,22 @@ function setText(id, text) {
   if (el) el.textContent = text;
 }
 
-/* ================= RENDER ================= */
+/* ================= MODE UI ================= */
 
-function renderControllerState(state) {
-  const nameAInput = document.getElementById("nameAInput");
-  const nameBInput = document.getElementById("nameBInput");
-  const sponsorInput = document.getElementById("sponsorInput");
-  const simpleScoreAInput = document.getElementById("simpleScoreA");
-  const simpleScoreBInput = document.getElementById("simpleScoreB");
+function applyControllerModeUI(state) {
+  const fullModeUI = document.getElementById("fullModeUI");
+  const simpleModeUI = document.getElementById("simpleModeUI");
+  const previewDock = document.getElementById("stickyPreviewDock");
 
-  if (nameAInput) nameAInput.value = state.nameA || "";
-  if (nameBInput) nameBInput.value = state.nameB || "";
-  if (sponsorInput) sponsorInput.value = state.organizer || "";
-
-  if (simpleScoreAInput) simpleScoreAInput.value = state.simpleScoreA || "";
-  if (simpleScoreBInput) simpleScoreBInput.value = state.simpleScoreB || "";
-
-  timerSeconds = parseTimerText(state.timerText || "00:00");
-
-  setText("teamANamePreview", state.nameA || "Player1 / Player2");
-  setText("teamBNamePreview", state.nameB || "Player1 / Player2");
-
-  setBadgeText("serveBadge", `Serve: ${state.serve || "A"}`);
-
-  let modeText = "Normal Mode";
-  if (state.simpleMode) modeText = "Simple Mode";
-  else if (state.mode === "tiebreak") modeText = "Tiebreak";
-  else if (state.matchOver === true || state.mode === "finished") modeText = "Match Finished";
-
-  setBadgeText("modeBadge", modeText);
-  setBadgeText("visibleBadge", state.visible === false ? "Overlay Hidden" : "Overlay Visible");
-
-  ensureSimpleModeToggleButton();
-  updateCourtButtons();
-  applyControllerModeUI(state);
-  updateCourtPreview(false);
-  updateFloatingPreviewLayout();
-}
-
-function bindCourtStateListener() {
-  onStateChange(renderControllerState);
-}
-
-/* ================= SIMPLE MODE ================= */
-
-function toggleSimpleMode() {
-  flashButton("normal");
-
-  readState(state => {
-    pushHistory(state);
-    state.simpleMode = !state.simpleMode;
-    writeState(state);
-  });
-}
-
-function updateSimpleScore() {
-  flashButton("normal");
-
-  const aEl = document.getElementById("simpleScoreA");
-  const bEl = document.getElementById("simpleScoreB");
-
-  const a = aEl ? aEl.value : "0";
-  const b = bEl ? bEl.value : "0";
-
-  readState(state => {
-    pushHistory(state);
-    state.simpleScoreA = a;
-    state.simpleScoreB = b;
-    writeState(state);
-  });
-}
-
-/* ================= COURT SWITCH ================= */
-
-function switchCourtUI(id) {
-  flashButton("normal");
-
-  historyStack = [];
-  stopTimer();
-
-  switchCourt(id);
-  bindCourtStateListener();
-  updateCourtButtons();
-  updateCourtPreview(true);
-
-  readState(state => {
-    renderControllerState(state);
-  });
+  if (state.simpleMode === true) {
+    if (fullModeUI) fullModeUI.style.display = "none";
+    if (simpleModeUI) simpleModeUI.style.display = "";
+    if (previewDock) previewDock.style.display = "";
+  } else {
+    if (fullModeUI) fullModeUI.style.display = "";
+    if (simpleModeUI) simpleModeUI.style.display = "none";
+    if (previewDock) previewDock.style.display = "";
+  }
 }
 
 /* ================= HISTORY ================= */
@@ -502,7 +351,11 @@ function addPoint(player) {
 function updateNameA() {
   flashButton("normal");
 
-  const value = document.getElementById("nameAInput").value || "";
+  const fullInput = document.getElementById("nameAInput");
+  const simpleInput = document.getElementById("simpleNameA");
+  const value = fullInput && fullInput.offsetParent !== null
+    ? (fullInput.value || "")
+    : (simpleInput ? simpleInput.value || "" : "");
 
   readState(state => {
     pushHistory(state);
@@ -514,7 +367,11 @@ function updateNameA() {
 function updateNameB() {
   flashButton("normal");
 
-  const value = document.getElementById("nameBInput").value || "";
+  const fullInput = document.getElementById("nameBInput");
+  const simpleInput = document.getElementById("simpleNameB");
+  const value = fullInput && fullInput.offsetParent !== null
+    ? (fullInput.value || "")
+    : (simpleInput ? simpleInput.value || "" : "");
 
   readState(state => {
     pushHistory(state);
@@ -599,6 +456,53 @@ function resetMatch() {
   });
 }
 
+/* ================= SIMPLE MODE ================= */
+
+function toggleSimpleMode() {
+  flashButton("normal");
+
+  readState(state => {
+    pushHistory(state);
+    state.simpleMode = !state.simpleMode;
+    writeState(state);
+  });
+}
+
+function updateSimpleScore() {
+  flashButton("normal");
+
+  const aEl = document.getElementById("simpleScoreA");
+  const bEl = document.getElementById("simpleScoreB");
+
+  const a = aEl ? aEl.value || "0" : "0";
+  const b = bEl ? bEl.value || "0" : "0";
+
+  readState(state => {
+    pushHistory(state);
+    state.simpleScoreA = a;
+    state.simpleScoreB = b;
+    writeState(state);
+  });
+}
+
+/* ================= COURT SWITCH ================= */
+
+function switchCourtUI(id) {
+  flashButton("normal");
+
+  historyStack = [];
+  stopTimer();
+
+  switchCourt(id);
+  bindCourtStateListener();
+  updateCourtButtons();
+  updateCourtPreview(true);
+
+  readState(state => {
+    renderControllerState(state);
+  });
+}
+
 /* ================= PREVIEW SCALE ================= */
 
 function resizeObsPreview() {
@@ -609,32 +513,31 @@ function resizeObsPreview() {
 
   const viewportWidth = viewport.clientWidth;
   const viewportHeight = viewport.clientHeight;
-
   const baseWidth = 1920;
   const baseHeight = 1080;
 
   if (!viewportWidth || !viewportHeight) return;
 
-  const scale = Math.min(viewportWidth / baseWidth, viewportHeight / baseHeight);
-  const scaledWidth = baseWidth * scale;
-  const scaledHeight = baseHeight * scale;
-
-  const offsetX = (viewportWidth - scaledWidth) / 2;
-  const offsetY = (viewportHeight - scaledHeight) / 2;
-
   iframe.style.width = `${baseWidth}px`;
   iframe.style.height = `${baseHeight}px`;
   iframe.style.transformOrigin = "top left";
-  iframe.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale}) translateZ(0)`;
   iframe.style.left = "0px";
   iframe.style.top = "0px";
+
+  const isMobile = window.innerWidth <= 640;
+  const cropWidth = isMobile ? 1920 : 1920;
+  const cropHeight = isMobile ? 1080 : 1080;
+
+  const scale = Math.min(viewportWidth / cropWidth, viewportHeight / cropHeight);
+
+  iframe.style.transform = `scale(${scale}) translateZ(0)`;
 }
 
 /* ================= IOS SAFARI HARD LOCK ================= */
 
 function lockPreviewDockToViewport() {
   const dock = document.getElementById("stickyPreviewDock");
-  if (!dock || dock.style.display === "none") return;
+  if (!dock) return;
 
   const vv = window.visualViewport;
   const isMobile = window.innerWidth <= 640;
@@ -683,22 +586,67 @@ if (window.visualViewport) {
   });
 }
 
+/* ================= RENDER ================= */
+
+function renderControllerState(state) {
+  const nameAInput = document.getElementById("nameAInput");
+  const nameBInput = document.getElementById("nameBInput");
+  const sponsorInput = document.getElementById("sponsorInput");
+  const simpleScoreAInput = document.getElementById("simpleScoreA");
+  const simpleScoreBInput = document.getElementById("simpleScoreB");
+  const simpleNameAInput = document.getElementById("simpleNameA");
+  const simpleNameBInput = document.getElementById("simpleNameB");
+
+  if (nameAInput) nameAInput.value = state.nameA || "";
+  if (nameBInput) nameBInput.value = state.nameB || "";
+  if (sponsorInput) sponsorInput.value = state.organizer || "";
+
+  if (simpleScoreAInput) simpleScoreAInput.value = state.simpleScoreA || "";
+  if (simpleScoreBInput) simpleScoreBInput.value = state.simpleScoreB || "";
+
+  if (simpleNameAInput) simpleNameAInput.value = state.nameA || "";
+  if (simpleNameBInput) simpleNameBInput.value = state.nameB || "";
+
+  timerSeconds = parseTimerText(state.timerText || "00:00");
+
+  setText("teamANamePreview", state.nameA || "Player1 / Player2");
+  setText("teamBNamePreview", state.nameB || "Player1 / Player2");
+
+  setBadgeText("serveBadge", `Serve: ${state.serve || "A"}`);
+
+  let modeText = "Normal Mode";
+  if (state.simpleMode) modeText = "Simple Mode";
+  else if (state.mode === "tiebreak") modeText = "Tiebreak";
+  else if (state.matchOver === true || state.mode === "finished") modeText = "Match Finished";
+
+  setBadgeText("modeBadge", modeText);
+  setBadgeText("visibleBadge", state.visible === false ? "Overlay Hidden" : "Overlay Visible");
+
+  updateCourtButtons();
+  applyControllerModeUI(state);
+  updateCourtPreview(false);
+  updateFloatingPreviewLayout();
+}
+
+function bindCourtStateListener() {
+  onStateChange(renderControllerState);
+}
+
 window.addEventListener("load", () => {
-  ensureSimpleModeToggleButton();
   setTimeout(updateFloatingPreviewLayout, 80);
   updateCourtButtons();
-  updateCourtPreview(false);
+  updateCourtPreview(true);
 
   readState(state => {
     renderControllerState(state);
   });
 });
 
-/* ================= INIT INPUTS FROM STATE ================= */
+/* ================= INIT ================= */
 
 bindCourtStateListener();
 
-/* ================= GLOBAL EXPORTS FOR HTML onclick ================= */
+/* ================= GLOBAL EXPORTS ================= */
 
 window.updateNameA = updateNameA;
 window.updateNameB = updateNameB;
