@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PadelWars ScoreBoard</title>
-  <link rel="stylesheet" href="css/controller.css?v=6">
+  <link rel="stylesheet" href="css/controller.css?v=7">
 </head>
 <body>
 
@@ -24,6 +24,7 @@
       </div>
     </header>
 
+    <!-- COURTS -->
     <section class="panel">
       <div class="sectionTop">
         <h2>Court Selection</h2>
@@ -43,6 +44,7 @@
       </div>
     </section>
 
+    <!-- MATCH INFO -->
     <section class="panel infoPanel">
       <div class="sectionTop">
         <h2>Match Info</h2>
@@ -56,80 +58,100 @@
 
       <div class="fieldGrid">
         <div class="fieldBlock">
-          <label for="nameAInput">Team A Players</label>
-          <input id="nameAInput" placeholder="Player1 / Player2">
-          <button class="btn btnPrimary btnFull" onclick="updateNameA()">Update Team A</button>
+          <label>Team A Players</label>
+          <input id="nameAInput">
+          <button class="btn btnPrimary btnFull" onclick="updateNameA()">Update</button>
         </div>
 
         <div class="fieldBlock">
-          <label for="nameBInput">Team B Players</label>
-          <input id="nameBInput" placeholder="Player1 / Player2">
-          <button class="btn btnPrimary btnFull" onclick="updateNameB()">Update Team B</button>
+          <label>Team B Players</label>
+          <input id="nameBInput">
+          <button class="btn btnPrimary btnFull" onclick="updateNameB()">Update</button>
         </div>
 
         <div class="fieldBlock fullSpan">
-          <label for="sponsorInput">Sponsor (@)</label>
-          <input id="sponsorInput" placeholder="@sponsor">
-          <button class="btn btnPrimary btnFull" onclick="updateSponsor()">Update Sponsor</button>
+          <label>Sponsor</label>
+          <input id="sponsorInput">
+          <button class="btn btnPrimary btnFull" onclick="updateSponsor()">Update</button>
         </div>
       </div>
     </section>
 
-    <section class="teamGrid">
-      <article class="panel teamCard teamA">
-        <div class="teamCardTop">
-          <div>
-            <div class="teamLabel">TEAM A</div>
-            <div id="teamANamePreview" class="teamNamePreview">Player1 / Player2</div>
-          </div>
-        </div>
-
-        <div class="scoreActionGrid">
-          <button class="btn btnScore" onclick="addPoint('A')">+ Point A</button>
-        </div>
-      </article>
-
-      <article class="panel teamCard teamB">
-        <div class="teamCardTop">
-          <div>
-            <div class="teamLabel">TEAM B</div>
-            <div id="teamBNamePreview" class="teamNamePreview">Player1 / Player2</div>
-          </div>
-        </div>
-
-        <div class="scoreActionGrid">
-          <button class="btn btnScore" onclick="addPoint('B')">+ Point B</button>
-        </div>
-      </article>
-    </section>
-
+    <!-- SIMPLE MODE PANEL -->
     <section class="panel">
       <div class="sectionTop">
-        <h2>Quick Controls</h2>
+        <h2>Simple Mode</h2>
       </div>
 
       <div class="actionGrid">
-        <button class="btn btnSecondary" onclick="switchServe()">Switch Serve</button>
-        <button class="btn btnSecondary" onclick="undo()">Undo</button>
-        <button class="btn btnSecondary" onclick="toggleScoreboard()">Show / Hide</button>
-        <button class="btn btnDanger" onclick="resetMatch()">Reset Match</button>
+        <button class="btn btnSecondary" onclick="toggleSimpleMode()">
+          Toggle Simple Mode
+        </button>
+      </div>
+
+      <div class="fieldGrid" style="margin-top:10px;">
+        <div class="fieldBlock">
+          <label>Score A</label>
+          <input id="simpleScoreA" placeholder="π.χ. 3">
+        </div>
+
+        <div class="fieldBlock">
+          <label>Score B</label>
+          <input id="simpleScoreB" placeholder="π.χ. 5">
+        </div>
+
+        <div class="fieldBlock fullSpan">
+          <button class="btn btnPrimary btnFull" onclick="updateSimpleScore()">
+            Update Score
+          </button>
+        </div>
       </div>
     </section>
 
+    <!-- SCORE BUTTONS -->
+    <section class="teamGrid">
+      <article class="panel teamCard">
+        <div class="teamLabel">TEAM A</div>
+        <div id="teamANamePreview">Player1</div>
+        <button class="btn btnScore" onclick="addPoint('A')">+ Point A</button>
+      </article>
+
+      <article class="panel teamCard">
+        <div class="teamLabel">TEAM B</div>
+        <div id="teamBNamePreview">Player2</div>
+        <button class="btn btnScore" onclick="addPoint('B')">+ Point B</button>
+      </article>
+    </section>
+
+    <!-- ACTIONS -->
     <section class="panel">
       <div class="sectionTop">
-        <h2>Timer Controls</h2>
+        <h2>Controls</h2>
+      </div>
+
+      <div class="actionGrid">
+        <button class="btn btnSecondary" onclick="undo()">Undo</button>
+        <button class="btn btnSecondary" onclick="toggleScoreboard()">Show/Hide</button>
+        <button class="btn btnDanger" onclick="resetMatch()">Reset</button>
+      </div>
+    </section>
+
+    <!-- TIMER -->
+    <section class="panel">
+      <div class="sectionTop">
+        <h2>Timer</h2>
       </div>
 
       <div class="actionGrid">
         <button class="btn btnPrimary" onclick="startTimer()">Start</button>
         <button class="btn btnSecondary" onclick="stopTimer()">Stop</button>
-        <button class="btn btnDangerSoft" onclick="resetTimer()">Reset Timer</button>
+        <button class="btn btnDangerSoft" onclick="resetTimer()">Reset</button>
       </div>
     </section>
 
   </div>
 
+  <!-- PREVIEW -->
   <div id="stickyPreviewDock" class="stickyPreviewDock">
     <div class="stickyPreviewInner">
       <div class="stickyPreviewTop">
@@ -137,13 +159,7 @@
       </div>
 
       <div id="previewViewport" class="previewViewport stickyMode">
-        <iframe
-          id="obsPreview"
-          class="previewFrame"
-          src="obs.html?court=1"
-          title="OBS Scoreboard Preview"
-          loading="lazy">
-        </iframe>
+        <iframe id="obsPreview" class="previewFrame" src="obs.html?court=1"></iframe>
       </div>
     </div>
   </div>
@@ -152,8 +168,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script src="js/firebase.js?v=2"></script>
-  <script src="js/state.js?v=2"></script>
-  <script src="js/controller.js?v=2"></script>
+  <script src="js/state.js?v=3"></script>
+  <script src="js/controller.js?v=3"></script>
 
 </body>
 </html>
