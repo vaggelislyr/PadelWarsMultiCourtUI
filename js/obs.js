@@ -32,7 +32,42 @@ let previousGamesA = null;
 let previousGamesB = null;
 
 /* =========================================
-   SAFE SHOW / HIDE ANIMATION
+   SIMPLE MODE HELPERS
+========================================= */
+
+function applySimpleMode(state) {
+  const isSimple = state.simpleMode === true;
+
+  if (isSimple) {
+    // hide sets
+    set1AEl.classList.add("hiddenSet");
+    set1BEl.classList.add("hiddenSet");
+    set2AEl.classList.add("hiddenSet");
+    set2BEl.classList.add("hiddenSet");
+
+    // use games cells σαν main score
+    gamesAEl.textContent = state.simpleScoreA || "0";
+    gamesBEl.textContent = state.simpleScoreB || "0";
+
+    // hide points
+    pointsAEl.textContent = "";
+    pointsBEl.textContent = "";
+
+    goldenBannerEl.classList.remove("active");
+    tiebreakBannerEl.classList.remove("active");
+    winnerBannerEl.classList.remove("active");
+
+    nameAEl.classList.remove("winnerName", "loserName");
+    nameBEl.classList.remove("winnerName", "loserName");
+
+    return true;
+  }
+
+  return false;
+}
+
+/* =========================================
+   SAFE SHOW / HIDE
 ========================================= */
 
 const OVERLAY_ANIM_MS = 760;
@@ -54,68 +89,25 @@ function setupOverlayAnimationBase() {
   ].join(", ");
 }
 
-function restartIntroSequence() {
-  overlayWrapper.classList.remove("broadcastIntro");
-  void overlayWrapper.offsetWidth;
-  overlayWrapper.classList.add("broadcastIntro");
-
-  setTimeout(() => {
-    overlayWrapper.classList.remove("broadcastIntro");
-  }, 1100);
-}
-
 function showOverlaySmooth() {
   clearTimeout(overlayHideTimer);
-
-  if (overlayIsVisible && overlayWrapper.style.display !== "none") {
-    overlayWrapper.style.display = "flex";
-    overlayWrapper.style.opacity = "1";
-    overlayWrapper.style.transform = "translateY(0px) scale(1)";
-    overlayWrapper.style.filter = "blur(0px)";
-    return;
-  }
-
   overlayWrapper.style.display = "flex";
-  overlayWrapper.style.opacity = "0";
-  overlayWrapper.style.transform = "translateY(-28px) scale(0.985)";
-  overlayWrapper.style.filter = "blur(3px)";
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      restartIntroSequence();
-      overlayWrapper.style.opacity = "1";
-      overlayWrapper.style.transform = "translateY(0px) scale(1)";
-      overlayWrapper.style.filter = "blur(0px)";
-    });
-  });
-
-  overlayIsVisible = true;
+  overlayWrapper.style.opacity = "1";
 }
 
 function hideOverlaySmooth() {
   clearTimeout(overlayHideTimer);
-
-  if (!overlayIsVisible && overlayWrapper.style.display === "none") {
-    return;
-  }
-
-  overlayWrapper.classList.remove("broadcastIntro");
-  overlayWrapper.style.display = "flex";
   overlayWrapper.style.opacity = "0";
-  overlayWrapper.style.transform = "translateY(-24px) scale(0.99)";
-  overlayWrapper.style.filter = "blur(2px)";
 
   overlayHideTimer = setTimeout(() => {
     overlayWrapper.style.display = "none";
   }, OVERLAY_ANIM_MS);
-
-  overlayIsVisible = false;
 }
 
 setupOverlayAnimationBase();
 
 /* =========================================
-   SCOREBOARD HELPERS
+   HELPERS
 ========================================= */
 
 function tennisPoints(p) {
@@ -169,6 +161,16 @@ onStateChange(function (state) {
   nameAEl.textContent = safeText(state.nameA, "Player A1 / Player A2");
   nameBEl.textContent = safeText(state.nameB, "Player B1 / Player B2");
 
+  /* ================= SIMPLE MODE ================= */
+
+  if (applySimpleMode(state)) {
+    organizerEl.textContent = safeText(state.organizer, "@sponsor");
+    timerEl.textContent = safeText(state.timerText, "00:00");
+    return;
+  }
+
+  /* ================= NORMAL MODE ================= */
+
   const historyA = Array.isArray(state.setHistoryA) ? state.setHistoryA : [];
   const historyB = Array.isArray(state.setHistoryB) ? state.setHistoryB : [];
 
@@ -180,8 +182,6 @@ onStateChange(function (state) {
   } else {
     set1AEl.classList.add("hiddenSet");
     set1BEl.classList.add("hiddenSet");
-    set1AEl.textContent = "0";
-    set1BEl.textContent = "0";
   }
 
   if (historyA.length >= 2 && historyB.length >= 2) {
@@ -192,59 +192,20 @@ onStateChange(function (state) {
   } else {
     set2AEl.classList.add("hiddenSet");
     set2BEl.classList.add("hiddenSet");
-    set2AEl.textContent = "0";
-    set2BEl.textContent = "0";
-  }
-
-  if (previousGamesA !== null && previousGamesA !== state.gamesA) {
-    popScore(gamesAEl);
-  }
-  if (previousGamesB !== null && previousGamesB !== state.gamesB) {
-    popScore(gamesBEl);
   }
 
   gamesAEl.textContent = safeText(state.gamesA, "0");
   gamesBEl.textContent = safeText(state.gamesB, "0");
 
   if (state.mode === "tiebreak") {
-    if (previousPointsA !== null && previousPointsA !== state.pointsA) {
-      popScore(pointsAEl);
-    }
-    if (previousPointsB !== null && previousPointsB !== state.pointsB) {
-      popScore(pointsBEl);
-    }
-
     pointsAEl.textContent = safeText(state.pointsA, "0");
     pointsBEl.textContent = safeText(state.pointsB, "0");
   } else if (state.mode === "finished") {
     pointsAEl.textContent = "-";
     pointsBEl.textContent = "-";
   } else {
-    if (previousPointsA !== null && previousPointsA !== state.pointsA) {
-      popScore(pointsAEl);
-    }
-    if (previousPointsB !== null && previousPointsB !== state.pointsB) {
-      popScore(pointsBEl);
-    }
-
     pointsAEl.textContent = tennisPoints(state.pointsA ?? 0);
     pointsBEl.textContent = tennisPoints(state.pointsB ?? 0);
-  }
-
-  if (state.goldenActive && state.mode === "normal") {
-    goldenBannerEl.classList.add("active");
-
-    if ((state.pointsA ?? 0) === 3 && (state.pointsB ?? 0) === 3) {
-      pointsAEl.classList.add("goldenText");
-      pointsBEl.classList.add("goldenText");
-    } else {
-      pointsAEl.classList.remove("goldenText");
-      pointsBEl.classList.remove("goldenText");
-    }
-  } else {
-    goldenBannerEl.classList.remove("active");
-    pointsAEl.classList.remove("goldenText");
-    pointsBEl.classList.remove("goldenText");
   }
 
   if (state.mode === "tiebreak") {
@@ -261,7 +222,7 @@ onStateChange(function (state) {
     if ((state.setsA ?? 0) > (state.setsB ?? 0)) {
       nameAEl.classList.add("winnerName");
       nameBEl.classList.add("loserName");
-    } else if ((state.setsB ?? 0) > (state.setsA ?? 0)) {
+    } else {
       nameBEl.classList.add("winnerName");
       nameAEl.classList.add("loserName");
     }
