@@ -39,19 +39,19 @@ function applySimpleMode(state) {
   const isSimple = state.simpleMode === true;
 
   if (isSimple) {
-    // hide sets
     set1AEl.classList.add("hiddenSet");
     set1BEl.classList.add("hiddenSet");
     set2AEl.classList.add("hiddenSet");
     set2BEl.classList.add("hiddenSet");
 
-    // use games cells σαν main score
-    gamesAEl.textContent = state.simpleScoreA || "0";
-    gamesBEl.textContent = state.simpleScoreB || "0";
+    gamesAEl.textContent = safeText(state.simpleScoreA, "0");
+    gamesBEl.textContent = safeText(state.simpleScoreB, "0");
 
-    // hide points
     pointsAEl.textContent = "";
     pointsBEl.textContent = "";
+
+    pointsAEl.classList.remove("goldenText");
+    pointsBEl.classList.remove("goldenText");
 
     goldenBannerEl.classList.remove("active");
     tiebreakBannerEl.classList.remove("active");
@@ -129,6 +129,8 @@ function clearWinnerStyles() {
 }
 
 function popScore(el) {
+  if (!el) return;
+
   el.classList.remove("scorePop");
   void el.offsetWidth;
   el.classList.add("scorePop");
@@ -166,6 +168,11 @@ onStateChange(function (state) {
   if (applySimpleMode(state)) {
     organizerEl.textContent = safeText(state.organizer, "@sponsor");
     timerEl.textContent = safeText(state.timerText, "00:00");
+
+    previousPointsA = state.pointsA;
+    previousPointsB = state.pointsB;
+    previousGamesA = state.gamesA;
+    previousGamesB = state.gamesB;
     return;
   }
 
@@ -182,6 +189,8 @@ onStateChange(function (state) {
   } else {
     set1AEl.classList.add("hiddenSet");
     set1BEl.classList.add("hiddenSet");
+    set1AEl.textContent = "0";
+    set1BEl.textContent = "0";
   }
 
   if (historyA.length >= 2 && historyB.length >= 2) {
@@ -192,21 +201,64 @@ onStateChange(function (state) {
   } else {
     set2AEl.classList.add("hiddenSet");
     set2BEl.classList.add("hiddenSet");
+    set2AEl.textContent = "0";
+    set2BEl.textContent = "0";
+  }
+
+  if (previousGamesA !== null && previousGamesA !== state.gamesA) {
+    popScore(gamesAEl);
+  }
+  if (previousGamesB !== null && previousGamesB !== state.gamesB) {
+    popScore(gamesBEl);
   }
 
   gamesAEl.textContent = safeText(state.gamesA, "0");
   gamesBEl.textContent = safeText(state.gamesB, "0");
 
   if (state.mode === "tiebreak") {
+    if (previousPointsA !== null && previousPointsA !== state.pointsA) {
+      popScore(pointsAEl);
+    }
+    if (previousPointsB !== null && previousPointsB !== state.pointsB) {
+      popScore(pointsBEl);
+    }
+
     pointsAEl.textContent = safeText(state.pointsA, "0");
     pointsBEl.textContent = safeText(state.pointsB, "0");
   } else if (state.mode === "finished") {
     pointsAEl.textContent = "-";
     pointsBEl.textContent = "-";
   } else {
+    if (previousPointsA !== null && previousPointsA !== state.pointsA) {
+      popScore(pointsAEl);
+    }
+    if (previousPointsB !== null && previousPointsB !== state.pointsB) {
+      popScore(pointsBEl);
+    }
+
     pointsAEl.textContent = tennisPoints(state.pointsA ?? 0);
     pointsBEl.textContent = tennisPoints(state.pointsB ?? 0);
   }
+
+  /* ================= GOLDEN POINT ================= */
+
+  if (state.goldenActive && state.mode === "normal") {
+    goldenBannerEl.classList.add("active");
+
+    if ((state.pointsA ?? 0) === 3 && (state.pointsB ?? 0) === 3) {
+      pointsAEl.classList.add("goldenText");
+      pointsBEl.classList.add("goldenText");
+    } else {
+      pointsAEl.classList.remove("goldenText");
+      pointsBEl.classList.remove("goldenText");
+    }
+  } else {
+    goldenBannerEl.classList.remove("active");
+    pointsAEl.classList.remove("goldenText");
+    pointsBEl.classList.remove("goldenText");
+  }
+
+  /* ================= TIEBREAK ================= */
 
   if (state.mode === "tiebreak") {
     tiebreakBannerEl.classList.add("active");
@@ -214,15 +266,17 @@ onStateChange(function (state) {
     tiebreakBannerEl.classList.remove("active");
   }
 
+  /* ================= MATCH WINNER ================= */
+
   clearWinnerStyles();
 
-  if (state.matchOver === true) {
+  if (state.matchOver === true || state.mode === "finished") {
     winnerBannerEl.classList.add("active");
 
     if ((state.setsA ?? 0) > (state.setsB ?? 0)) {
       nameAEl.classList.add("winnerName");
       nameBEl.classList.add("loserName");
-    } else {
+    } else if ((state.setsB ?? 0) > (state.setsA ?? 0)) {
       nameBEl.classList.add("winnerName");
       nameAEl.classList.add("loserName");
     }
