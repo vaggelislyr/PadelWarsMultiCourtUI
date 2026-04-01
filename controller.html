@@ -1,175 +1,105 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PadelWars ScoreBoard</title>
-  <link rel="stylesheet" href="css/controller.css?v=7">
-</head>
-<body>
+<!-- ΒΑΖΟΥΜΕ WRAPPER ΓΙΑ FULL MODE -->
+<div id="fullModeUI">
 
-  <div class="appShell">
-
-    <header class="appHeader">
-      <div>
-        <div class="eyebrow">LIVE CONTROLLER</div>
-        <h1>PadelWars ScoreBoard</h1>
-      </div>
-
-      <div class="headerStatus">
-        <div class="statusChip">
-          <span class="statusDot"></span>
-          <span>Firebase Live</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- COURTS -->
-    <section class="panel">
-      <div class="sectionTop">
-        <h2>Court Selection</h2>
-        <div class="miniBadges">
-          <span id="currentCourtBadge" class="miniBadge">COURT1</span>
-        </div>
-      </div>
-
-      <div class="courtSwitcher">
-        <button class="btn btnCourt" data-court="court1" onclick="switchCourtUI(1)">Court 1</button>
-        <button class="btn btnCourt" data-court="court2" onclick="switchCourtUI(2)">Court 2</button>
-        <button class="btn btnCourt" data-court="court3" onclick="switchCourtUI(3)">Court 3</button>
-        <button class="btn btnCourt" data-court="court4" onclick="switchCourtUI(4)">Court 4</button>
-        <button class="btn btnCourt" data-court="court5" onclick="switchCourtUI(5)">Court 5</button>
-        <button class="btn btnCourt" data-court="court6" onclick="switchCourtUI(6)">Court 6</button>
-        <button class="btn btnCourt" data-court="court7" onclick="switchCourtUI(7)">Court 7</button>
-      </div>
-    </section>
-
-    <!-- MATCH INFO -->
-    <section class="panel infoPanel">
-      <div class="sectionTop">
-        <h2>Match Info</h2>
-
-        <div class="miniBadges">
-          <span id="visibleBadge" class="miniBadge">Overlay Visible</span>
-          <span id="modeBadge" class="miniBadge">Normal Mode</span>
-          <span id="serveBadge" class="miniBadge">Serve: A</span>
-        </div>
-      </div>
-
-      <div class="fieldGrid">
-        <div class="fieldBlock">
-          <label>Team A Players</label>
-          <input id="nameAInput">
-          <button class="btn btnPrimary btnFull" onclick="updateNameA()">Update</button>
-        </div>
-
-        <div class="fieldBlock">
-          <label>Team B Players</label>
-          <input id="nameBInput">
-          <button class="btn btnPrimary btnFull" onclick="updateNameB()">Update</button>
-        </div>
-
-        <div class="fieldBlock fullSpan">
-          <label>Sponsor</label>
-          <input id="sponsorInput">
-          <button class="btn btnPrimary btnFull" onclick="updateSponsor()">Update</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- SIMPLE MODE PANEL -->
-    <section class="panel">
-      <div class="sectionTop">
-        <h2>Simple Mode</h2>
-      </div>
-
-      <div class="actionGrid">
-        <button class="btn btnSecondary" onclick="toggleSimpleMode()">
-          Toggle Simple Mode
-        </button>
-      </div>
-
-      <div class="fieldGrid" style="margin-top:10px;">
-        <div class="fieldBlock">
-          <label>Score A</label>
-          <input id="simpleScoreA" placeholder="π.χ. 3">
-        </div>
-
-        <div class="fieldBlock">
-          <label>Score B</label>
-          <input id="simpleScoreB" placeholder="π.χ. 5">
-        </div>
-
-        <div class="fieldBlock fullSpan">
-          <button class="btn btnPrimary btnFull" onclick="updateSimpleScore()">
-            Update Score
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- SCORE BUTTONS -->
-    <section class="teamGrid">
-      <article class="panel teamCard">
-        <div class="teamLabel">TEAM A</div>
-        <div id="teamANamePreview">Player1</div>
-        <button class="btn btnScore" onclick="addPoint('A')">+ Point A</button>
-      </article>
-
-      <article class="panel teamCard">
-        <div class="teamLabel">TEAM B</div>
-        <div id="teamBNamePreview">Player2</div>
-        <button class="btn btnScore" onclick="addPoint('B')">+ Point B</button>
-      </article>
-    </section>
-
-    <!-- ACTIONS -->
-    <section class="panel">
-      <div class="sectionTop">
-        <h2>Controls</h2>
-      </div>
-
-      <div class="actionGrid">
-        <button class="btn btnSecondary" onclick="undo()">Undo</button>
-        <button class="btn btnSecondary" onclick="toggleScoreboard()">Show/Hide</button>
-        <button class="btn btnDanger" onclick="resetMatch()">Reset</button>
-      </div>
-    </section>
-
-    <!-- TIMER -->
-    <section class="panel">
-      <div class="sectionTop">
-        <h2>Timer</h2>
-      </div>
-
-      <div class="actionGrid">
-        <button class="btn btnPrimary" onclick="startTimer()">Start</button>
-        <button class="btn btnSecondary" onclick="stopTimer()">Stop</button>
-        <button class="btn btnDangerSoft" onclick="resetTimer()">Reset</button>
-      </div>
-    </section>
-
-  </div>
-
-  <!-- PREVIEW -->
-  <div id="stickyPreviewDock" class="stickyPreviewDock">
-    <div class="stickyPreviewInner">
-      <div class="stickyPreviewTop">
-        <span class="stickyPreviewLabel">OBS Preview</span>
-      </div>
-
-      <div id="previewViewport" class="previewViewport stickyMode">
-        <iframe id="obsPreview" class="previewFrame" src="obs.html?court=1"></iframe>
+  <!-- COURTS -->
+  <section class="panel">
+    <div class="sectionTop">
+      <h2>Court Selection</h2>
+      <div class="miniBadges">
+        <span id="currentCourtBadge" class="miniBadge">COURT1</span>
       </div>
     </div>
-  </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <div class="courtSwitcher">
+      <button class="btn btnCourt" onclick="switchCourtUI(1)">Court 1</button>
+      <button class="btn btnCourt" onclick="switchCourtUI(2)">Court 2</button>
+      <button class="btn btnCourt" onclick="switchCourtUI(3)">Court 3</button>
+      <button class="btn btnCourt" onclick="switchCourtUI(4)">Court 4</button>
+      <button class="btn btnCourt" onclick="switchCourtUI(5)">Court 5</button>
+      <button class="btn btnCourt" onclick="switchCourtUI(6)">Court 6</button>
+      <button class="btn btnCourt" onclick="switchCourtUI(7)">Court 7</button>
+    </div>
 
-  <script src="js/firebase.js?v=2"></script>
-  <script src="js/state.js?v=3"></script>
-  <script src="js/controller.js?v=3"></script>
+    <button class="btn btnPrimary btnFull" onclick="toggleSimpleMode()" style="margin-top:10px;">
+      Open Simple Mode
+    </button>
+  </section>
 
-</body>
-</html>
+  <!-- MATCH INFO -->
+  <section class="panel infoPanel">
+    <div class="sectionTop">
+      <h2>Match Info</h2>
+    </div>
+
+    <div class="fieldGrid">
+      <div class="fieldBlock">
+        <label>Team A Players</label>
+        <input id="nameAInput">
+        <button class="btn btnPrimary btnFull" onclick="updateNameA()">Update</button>
+      </div>
+
+      <div class="fieldBlock">
+        <label>Team B Players</label>
+        <input id="nameBInput">
+        <button class="btn btnPrimary btnFull" onclick="updateNameB()">Update</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCORE BUTTONS -->
+  <section class="teamGrid">
+    <article class="panel teamCard">
+      <div id="teamANamePreview">Player1</div>
+      <button class="btn btnScore" onclick="addPoint('A')">+ Point A</button>
+    </article>
+
+    <article class="panel teamCard">
+      <div id="teamBNamePreview">Player2</div>
+      <button class="btn btnScore" onclick="addPoint('B')">+ Point B</button>
+    </article>
+  </section>
+
+</div>
+
+
+<!-- SIMPLE MODE UI -->
+<div id="simpleModeUI" style="display:none;">
+
+  <section class="panel">
+    <h2>Simple Mode</h2>
+
+    <button class="btn btnPrimary btnFull" onclick="toggleSimpleMode()">
+      Back To Full Mode
+    </button>
+
+    <div class="fieldGrid" style="margin-top:10px;">
+      <div class="fieldBlock">
+        <label>Team A Name</label>
+        <input id="simpleNameA" oninput="updateNameA()">
+      </div>
+
+      <div class="fieldBlock">
+        <label>Team B Name</label>
+        <input id="simpleNameB" oninput="updateNameB()">
+      </div>
+
+      <div class="fieldBlock">
+        <label>Score A</label>
+        <input id="simpleScoreA">
+      </div>
+
+      <div class="fieldBlock">
+        <label>Score B</label>
+        <input id="simpleScoreB">
+      </div>
+
+      <div class="fieldBlock fullSpan">
+        <button class="btn btnPrimary btnFull" onclick="updateSimpleScore()">
+          Update Score
+        </button>
+      </div>
+    </div>
+
+  </section>
+
+</div>
