@@ -40,6 +40,9 @@ function updateCourtButtons() {
 
   const badge = document.getElementById("currentCourtBadge");
   if (badge) badge.textContent = active.toUpperCase();
+
+  const simpleBadge = document.getElementById("simpleModeCourtBadge");
+  if (simpleBadge) simpleBadge.textContent = active.toUpperCase();
 }
 
 /* ================= UI HELPERS ================= */
@@ -513,24 +516,39 @@ function resizeObsPreview() {
 
   const viewportWidth = viewport.clientWidth;
   const viewportHeight = viewport.clientHeight;
-  const baseWidth = 1920;
-  const baseHeight = 1080;
 
   if (!viewportWidth || !viewportHeight) return;
 
+  const baseWidth = 1920;
+  const baseHeight = 1080;
+
   iframe.style.width = `${baseWidth}px`;
   iframe.style.height = `${baseHeight}px`;
-  iframe.style.transformOrigin = "top left";
+  iframe.style.position = "absolute";
   iframe.style.left = "0px";
   iframe.style.top = "0px";
+  iframe.style.transformOrigin = "top left";
 
   const isMobile = window.innerWidth <= 640;
-  const cropWidth = isMobile ? 1920 : 1920;
-  const cropHeight = isMobile ? 1080 : 1080;
 
-  const scale = Math.min(viewportWidth / cropWidth, viewportHeight / cropHeight);
+  const cropX = 0;
+  const cropY = 0;
+  const cropWidth = isMobile ? 980 : 1180;
+  const cropHeight = isMobile ? 300 : 340;
 
-  iframe.style.transform = `scale(${scale}) translateZ(0)`;
+  const scale = Math.min(
+    viewportWidth / cropWidth,
+    viewportHeight / cropHeight
+  );
+
+  const shownWidth = cropWidth * scale;
+  const shownHeight = cropHeight * scale;
+
+  const offsetX = (viewportWidth - shownWidth) / 2;
+  const offsetY = (viewportHeight - shownHeight) / 2;
+
+  iframe.style.transform =
+    `translate(${offsetX - (cropX * scale)}px, ${offsetY - (cropY * scale)}px) scale(${scale}) translateZ(0)`;
 }
 
 /* ================= IOS SAFARI HARD LOCK ================= */
