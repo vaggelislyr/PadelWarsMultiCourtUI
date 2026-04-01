@@ -46,7 +46,12 @@ const DEFAULT_STATE = {
   deuceCount: 0,
 
   timerText: "00:00",
-  matchOver: false
+  matchOver: false,
+
+  // NEW: simple scoreboard mode
+  simpleMode: false,
+  simpleScoreA: "0",
+  simpleScoreB: "0"
 };
 
 function clone(obj) {
@@ -55,11 +60,21 @@ function clone(obj) {
 
 function normalizeState(raw) {
   const incoming = raw || {};
+
   return {
     ...clone(DEFAULT_STATE),
     ...incoming,
     setHistoryA: Array.isArray(incoming.setHistoryA) ? incoming.setHistoryA : [],
-    setHistoryB: Array.isArray(incoming.setHistoryB) ? incoming.setHistoryB : []
+    setHistoryB: Array.isArray(incoming.setHistoryB) ? incoming.setHistoryB : [],
+    simpleMode: incoming.simpleMode === true,
+    simpleScoreA:
+      incoming.simpleScoreA !== undefined && incoming.simpleScoreA !== null
+        ? String(incoming.simpleScoreA)
+        : "0",
+    simpleScoreB:
+      incoming.simpleScoreB !== undefined && incoming.simpleScoreB !== null
+        ? String(incoming.simpleScoreB)
+        : "0"
   };
 }
 
